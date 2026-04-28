@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Root Menu -->
+        <menuitem id="menu_appraisals_root"
+                  name="Feedbacks"
+                  groups="base.group_system,ks_crm_team_hierarchy.group_department_head,ks_crm_team_hierarchy.group_project_manager,ks_crm_team_hierarchy.group_presales_project_manager"
+                  sequence="50"/>
+
+        <!-- Employees List Action -->
+        <record id="action_employees_list" model="ir.actions.act_window">
+            <field name="name">Employees</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="hr.view_employee_tree"/>
+<!--            <field name="context">{'search_default_group_by_appraisal_cycle': 1}</field>-->
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No employees found</p>
+            </field>
+        </record>
+
+        <!-- Manager Feedback Menu (Client Action) -->
+        <menuitem id="menu_manager_feedback"
+                  name="Appraisal Feedback"
+                  parent="menu_appraisals_root"
+                  action="action_manager_feedback"
+                  groups="base.group_user"
+                  sequence="5"/>
+
+        <!-- Employees Menu -->
+        <menuitem id="menu_employees_list"
+                  name="Employees"
+                  parent="menu_appraisals_root"
+                  action="action_employees_list"
+                  sequence="10"/>
+
+        <!-- Employee Appraisals Menu -->
+        <menuitem id="menu_employee_appraisal"
+                  name="Employee Appraisals"
+                  parent="menu_appraisals_root"
+                  groups="base.group_system,ks_crm_team_hierarchy.group_department_head"
+                  sequence="20"/>
+
+        <menuitem id="menu_employee_appraisals"
+                  name="Employee Appraisals"
+                  parent="menu_employee_appraisal"
+                  action="action_ks_employee_appraisal"
+                  groups="base.group_system,ks_crm_team_hierarchy.group_department_head"
+                  sequence="10"/>
+
+        <!-- Send Appraisal Request Menu -->
+        <menuitem id="menu_send_appraisal_request"
+                  name="Send Appraisal Request"
+                  parent="menu_employee_appraisal"
+                  action="action_send_appraisal_survey_wizard"
+                  groups="base.group_system,ks_crm_team_hierarchy.group_department_head"
+                  sequence="20"/>
+
+
+        <!-- Question Categories Menu -->
+        <menuitem id="menu_ks_appraisal_question_category"
+                  name="Question Categories"
+                  parent="menu_employee_appraisal"
+                  action="action_ks_appraisal_question_category"
+                  sequence="30"/>
+
+        <!-- Question Master Menu -->
+        <menuitem id="menu_ks_question_master"
+                  name="Question Master"
+                  parent="menu_employee_appraisal"
+                  action="action_ks_question_master"
+                  sequence="40"/>
+    </data>
+</odoo>

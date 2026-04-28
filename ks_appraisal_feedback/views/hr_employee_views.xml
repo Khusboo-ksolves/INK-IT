@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Form View -->
+    <record id="hr_employee_view_form_appraisal_feedback" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.inherit.appraisal.feedback</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="ks_crm_team_hierarchy.hr_employee_view_form_inherit"/>
+        <field name="arch" type="xml">
+           <xpath expr="//group[@name='right']" position="inside">
+                <field name="appraisal_cycle"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <record id="hr_employee_view_appraisal" model="ir.ui.view">
+        <field name="name">hr.employee.view.list.inherit.appraisal</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='job_id']" position="after">
+                <field name="appraisal_cycle" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Inherit Search View to add Group By Appraisal Cycle -->
+    <record id="hr_employee_view_search_appraisal_feedback" model="ir.ui.view">
+        <field name="name">hr.employee.view.search.inherit.appraisal.feedback</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="inside">
+                <filter string="Appraisal Cycle" name="group_by_appraisal_cycle" context="{'group_by': 'appraisal_cycle'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

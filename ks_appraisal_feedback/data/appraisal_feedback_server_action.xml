@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Server Action: Export to Excel -->
+        <record id="action_export_employee_appraisal_excel" model="ir.actions.server">
+            <field name="name">Export to Excel</field>
+            <field name="model_id" ref="model_ks_employee_appraisal"/>
+            <field name="binding_model_id" ref="model_ks_employee_appraisal"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    action = records.action_export_excel()
+            </field>
+        </record>
+        
+        <!-- Server Action: Send Appraisal Request (from Employee List) -->
+        <record id="action_send_appraisal_from_employees" model="ir.actions.server">
+            <field name="name">Send Appraisal Request</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="binding_model_id" ref="hr.model_hr_employee"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Send Appraisal Request',
+    'res_model': 'send.appraisal.survey.wizard',
+    'view_mode': 'form',
+    'target': 'new',
+    'context': {
+        'default_employee_ids': records.ids if records else [],
+    }
+}
+            </field>
+        </record>
+    </data>
+</odoo>

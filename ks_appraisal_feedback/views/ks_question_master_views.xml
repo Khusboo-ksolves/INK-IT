@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Question Master Form View -->
+        <record id="view_ks_question_master_form" model="ir.ui.view">
+            <field name="name">ks.question.master.form</field>
+            <field name="model">ks.question.master</field>
+            <field name="arch" type="xml">
+                <form string="Question">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" placeholder="Enter question text..."/>
+                                <field name="category_id"/>
+                                <field name="question_type"/>
+                            </group>
+                            <group>
+                                <field name="sequence"/>
+                                <field name="is_required"/>
+                                <field name="active"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="description" placeholder="Optional help text for this question..."/>
+                        </group>
+                        
+                        <!-- Options for Selection/Multiple Choice -->
+                        <group string="Options" invisible="question_type not in ('selection', 'multiple_choice')">
+                            <field name="option_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" placeholder="Option text..."/>
+                                    <field name="is_default" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </group>
+                        
+                        <div class="alert alert-info" role="alert" invisible="question_type not in ('selection', 'multiple_choice')">
+                            <strong>Note:</strong> Add options that will be available for selection in the feedback form.
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Question Master List View -->
+        <record id="view_ks_question_master_list" model="ir.ui.view">
+            <field name="name">ks.question.master.list</field>
+            <field name="model">ks.question.master</field>
+            <field name="arch" type="xml">
+                <list string="Questions">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="category_id"/>
+                    <field name="question_type"/>
+                    <field name="option_count" string="Options" invisible="question_type not in ('selection', 'multiple_choice')"/>
+                    <field name="is_required" widget="boolean_toggle"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Question Master Search View -->
+        <record id="view_ks_question_master_search" model="ir.ui.view">
+            <field name="name">ks.question.master.search</field>
+            <field name="model">ks.question.master</field>
+            <field name="arch" type="xml">
+                <search string="Search Questions">
+                    <field name="name"/>
+                    <field name="category_id"/>
+                    <field name="question_type"/>
+                    <filter string="Required" name="required" domain="[('is_required', '=', True)]"/>
+                    <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                    <separator/>
+                    <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                    <group>
+                        <filter string="Category" name="group_by_category" context="{'group_by': 'category_id'}"/>
+                        <filter string="Question Type" name="group_by_type" context="{'group_by': 'question_type'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Question Master Action -->
+        <record id="action_ks_question_master" model="ir.actions.act_window">
+            <field name="name">Question Master</field>
+            <field name="res_model">ks.question.master</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_group_by_category': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first question
+                </p>
+                <p>
+                    Define questions for appraisal feedback forms.
+                    For Selection and Multiple Choice questions, click to open the form and add options.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

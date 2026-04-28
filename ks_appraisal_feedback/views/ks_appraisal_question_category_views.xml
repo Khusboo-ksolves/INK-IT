@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Question Category List View (Editable Bottom) -->
+        <record id="view_ks_appraisal_question_category_list" model="ir.ui.view">
+            <field name="name">ks.appraisal.question.category.list</field>
+            <field name="model">ks.appraisal.question.category</field>
+            <field name="arch" type="xml">
+                <list string="Question Categories" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="description"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Question Category Search View -->
+        <record id="view_ks_appraisal_question_category_search" model="ir.ui.view">
+            <field name="name">ks.appraisal.question.category.search</field>
+            <field name="model">ks.appraisal.question.category</field>
+            <field name="arch" type="xml">
+                <search string="Search Question Categories">
+                    <field name="name"/>
+                    <field name="description"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Question Category Action -->
+        <record id="action_ks_appraisal_question_category" model="ir.actions.act_window">
+            <field name="name">Question Categories</field>
+            <field name="res_model">ks.appraisal.question.category</field>
+            <field name="view_mode">list</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first question category
+                </p>
+                <p>
+                    Question categories help organize and group questions for appraisal feedback.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

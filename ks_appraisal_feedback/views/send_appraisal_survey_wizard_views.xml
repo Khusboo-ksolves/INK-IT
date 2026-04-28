@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Send Appraisal Wizard Form View -->
+        <record id="view_send_appraisal_survey_wizard_form" model="ir.ui.view">
+            <field name="name">send.appraisal.survey.wizard.form</field>
+            <field name="model">send.appraisal.survey.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Send Appraisal Feedback Request">
+                    <group>
+                        <group>
+                            <field name="employee_ids" 
+                                   widget="many2many_tags" 
+                                   options="{'no_create': True}"/>
+                            <field name="manager_id" 
+                                   widget="many2one_avatar_user"
+                                   options="{'no_create': True}"/>
+                            <field name="appraisal_cycle"/>
+                        </group>
+                        <group>
+                            <field name="deadline_date"/>
+                            <field name="cc_email_to" 
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Additional notes..."/>
+                    </group>
+                    <footer>
+                        <button name="action_send_surveys" 
+                                string="Send Appraisal Requests" 
+                                type="object" 
+                                class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Send Appraisal Wizard Action -->
+        <record id="action_send_appraisal_survey_wizard" model="ir.actions.act_window">
+            <field name="name">Send Appraisal Request</field>
+            <field name="res_model">send.appraisal.survey.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

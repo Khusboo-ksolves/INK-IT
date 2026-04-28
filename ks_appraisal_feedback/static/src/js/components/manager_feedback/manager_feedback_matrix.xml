@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    
+    <!-- Main Action Template -->
+    <t t-name="ks_appraisal_feedback.ManagerFeedbackAction">
+        <div class="o_action o_ks_manager_feedback_action h-100">
+            <ManagerFeedbackMatrix/>
+        </div>
+    </t>
+    
+    <!-- Manager Feedback Matrix Template -->
+    <!-- Layout: Employees on ROWS (frozen), Questions on COLUMNS (scrollable) -->
+    <t t-name="ks_appraisal_feedback.ManagerFeedbackMatrix">
+        <div class="o_ks_feedback_matrix h-100 d-flex flex-column">
+            <!-- Loading State -->
+            <t t-if="state.loading">
+                <div class="d-flex justify-content-center align-items-center h-100">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </t>
+            
+            <t t-else="">
+                <!-- Header -->
+                <div class="o_ks_feedback_header bg-white border-bottom px-4 py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <!-- Left: Annual Appraisal -->
+                        <div class="d-flex align-items-center" style="min-width: 200px;">
+                            <h4 class="mb-0 fw-bold text-dark">Annual Appraisal</h4>
+                        </div>
+                        
+                        <!-- Center: Cycle Name (April/October) -->
+                        <div class="text-center">
+                            <span class="badge bg-secondary fs-6 px-3 py-2" t-esc="state.cycleInfo"/>
+                        </div>
+                        
+                        <!-- Right: Action buttons (only when appraisals are present) -->
+                        <div class="d-flex align-items-center gap-2" t-if="hasEmployees">
+                            <button class="btn btn-outline-secondary" 
+                                    t-on-click="onSaveDraft"
+                                    t-att-disabled="state.saving or state.submitting">
+                                <t t-if="state.saving">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"/>
+                                    Saving...
+                                </t>
+                                <t t-else="">
+                                    <i class="fa fa-save me-1"/>
+                                    Save Draft
+                                </t>
+                            </button>
+                            <button class="btn btn-primary"
+                                    t-on-click="onSubmit"
+                                    t-att-disabled="state.saving or state.submitting">
+                                <t t-if="state.submitting">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"/>
+                                    Submitting...
+                                </t>
+                                <t t-else="">
+                                    <i class="fa fa-check me-1"/>
+                                    Submit
+                                </t>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- No Data State -->
+                <t t-if="!hasEmployees">
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
+                        <i class="fa fa-users fa-4x mb-3"/>
+                        <h4>No Appraisals Found</h4>
+                        <p>There are no appraisals assigned to you for feedback.</p>
+                    </div>
+                </t>
+                
+                <t t-elif="!hasCategories">
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
+                        <i class="fa fa-list-alt fa-4x mb-3"/>
+                        <h4>No Categories Found</h4>
+                        <p>Please configure question categories and questions first.</p>
+                    </div>
+                </t>
+                
+                <t t-else="">
+                    <!-- Main Content -->
+                    <div class="o_ks_feedback_content flex-grow-1 d-flex flex-column overflow-hidden">
+                        <!-- Category Tabs (Top) -->
+                        <div class="o_ks_category_tabs_container bg-light border-bottom px-3 py-2">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <t t-foreach="state.categories" t-as="category" t-key="category.id">
+                                    <button class="o_ks_category_tab btn btn-sm"
+                                            t-att-class="{'btn-primary': isCategoryActive(category.id), 'btn-outline-secondary': !isCategoryActive(category.id)}"
+                                            t-on-click="() => this.selectCategory(category.id)">
+                                        <span t-esc="category.name"/>
+                                    </button>
+                                </t>
+                            </div>
+                        </div>
+                        
+                        <!-- Matrix Area - Employees on Rows, Questions on Columns -->
+                        <div class="o_ks_matrix_scroll flex-grow-1" t-ref="matrixScroll">
+                            <div class="o_ks_matrix_table">
+                                <!-- Header Row: Employee Header + Question Headers -->
+                                <div class="o_ks_matrix_header_row">
+                                    <!-- Employee Column Header (sticky left + top) -->
+                                    <div class="o_ks_employee_col_header">
+                                        <span class="text-muted small fw-bold">Employee</span>
+                                    </div>
+                                    <!-- Question Headers (scrollable, expand to fill) -->
+                                    <t t-foreach="activeQuestions" t-as="question" t-key="question.id">
+                                        <div class="o_ks_question_header">
+                                            <div class="d-flex align-items-center gap-1">
+                                                <span class="o_ks_question_number badge bg-primary" t-esc="getQuestionNumber(question_index)"/>
+                                                <t t-if="question.is_required">
+                                                    <span class="text-danger fw-bold">*</span>
+                                                </t>
+                                            </div>
+                                            <span class="o_ks_question_text" t-esc="question.name"/>
+                                        </div>
+                                    </t>
+                                </div>
+                                
+                                <!-- Data Rows: One row per employee -->
+                                <t t-foreach="state.employees" t-as="employee" t-key="employee.appraisal_id">
+                                    <div class="o_ks_matrix_row">
+                                        <!-- Employee Cell (sticky left) -->
+                                        <div class="o_ks_employee_cell">
+                                            <div class="o_ks_employee_avatar">
+                                                <i class="fa fa-user-circle"/>
+                                            </div>
+                                            <div class="o_ks_employee_info">
+                                                <div class="o_ks_employee_name" t-esc="employee.employee_name"/>
+                                                <div class="o_ks_employee_designation" t-esc="employee.designation"/>
+                                            </div>
+                                        </div>
+                                        <!-- Answer Cells (one per question) -->
+                                        <t t-foreach="activeQuestions" t-as="question" t-key="question.id">
+                                            <div class="o_ks_answer_cell">
+                                                <!-- Rating Input -->
+                                                <t t-if="question.question_type === 'rating'">
+                                                    <div class="o_ks_rating_input">
+                                                        <t t-foreach="[1,2,3,4,5]" t-as="star" t-key="star">
+                                                            <button class="o_ks_star_btn btn btn-sm p-0"
+                                                                    t-att-class="{'text-warning': getRatingValue(employee.appraisal_id, question.id) >= star, 'text-muted': getRatingValue(employee.appraisal_id, question.id) &lt; star}"
+                                                                    t-on-click="() => this.onRatingChange(employee.appraisal_id, question.id, star)">
+                                                                <i class="fa fa-star"/>
+                                                            </button>
+                                                        </t>
+                                                    </div>
+                                                </t>
+                                                
+                                                <!-- Text Input -->
+                                                <t t-elif="question.question_type === 'text'">
+                                                    <input type="text" 
+                                                           class="form-control form-control-sm o_ks_text_input"
+                                                           t-att-value="getAnswer(employee.appraisal_id, question.id)"
+                                                           t-on-change="(ev) => this.onInputChange(ev, employee.appraisal_id, question.id)"
+                                                           placeholder="Enter details..."/>
+                                                </t>
+                                                
+                                                <!-- Textarea Input -->
+                                                <t t-elif="question.question_type === 'textarea'">
+                                                    <textarea class="form-control form-control-sm o_ks_textarea_input"
+                                                              rows="2"
+                                                              t-on-change="(ev) => this.onInputChange(ev, employee.appraisal_id, question.id)"
+                                                              placeholder="Enter details..."
+                                                              t-esc="getAnswer(employee.appraisal_id, question.id)"/>
+                                                </t>
+                                                
+                                                <!-- Number Input -->
+                                                <t t-elif="question.question_type === 'number'">
+                                                    <input type="number" 
+                                                           class="form-control form-control-sm o_ks_number_input"
+                                                           t-att-value="getAnswer(employee.appraisal_id, question.id)"
+                                                           t-on-change="(ev) => this.onInputChange(ev, employee.appraisal_id, question.id)"
+                                                           placeholder="0"/>
+                                                </t>
+                                                
+                                                <!-- Date Input -->
+                                                <t t-elif="question.question_type === 'date'">
+                                                    <input type="date" 
+                                                           class="form-control form-control-sm o_ks_date_input"
+                                                           t-att-value="getAnswer(employee.appraisal_id, question.id)"
+                                                           t-on-change="(ev) => this.onInputChange(ev, employee.appraisal_id, question.id)"/>
+                                                </t>
+                                                
+                                                <!-- Selection Input -->
+                                                <t t-elif="question.question_type === 'selection'">
+                                                    <select class="form-select form-select-sm o_ks_select_input"
+                                                            t-att-value="getAnswer(employee.appraisal_id, question.id)"
+                                                            t-on-change="(ev) => this.onInputChange(ev, employee.appraisal_id, question.id)">
+                                                        <option value="">Select...</option>
+                                                        <t t-foreach="question.options || []" t-as="option" t-key="option.id">
+                                                            <option t-att-value="option.name" 
+                                                                    t-att-selected="getAnswer(employee.appraisal_id, question.id) === option.name"
+                                                                    t-esc="option.name"/>
+                                                        </t>
+                                                    </select>
+                                                </t>
+                                                
+                                                <!-- Multiple Choice -->
+                                                <t t-elif="question.question_type === 'multiple_choice'">
+                                                    <div class="o_ks_multichoice_input btn-group btn-group-sm flex-wrap" role="group">
+                                                        <t t-foreach="question.options || []" t-as="option" t-key="option.id">
+                                                            <button type="button" 
+                                                                    class="btn"
+                                                                    t-att-class="{'btn-primary': getAnswer(employee.appraisal_id, question.id) === option.name, 'btn-outline-secondary': getAnswer(employee.appraisal_id, question.id) !== option.name}"
+                                                                    t-on-click="() => this.onOptionSelect(employee.appraisal_id, question.id, option.name)"
+                                                                    t-esc="option.name"/>
+                                                        </t>
+                                                    </div>
+                                                </t>
+                                                
+                                                <!-- Yes/No Input -->
+                                                <t t-elif="question.question_type === 'yes_no'">
+                                                    <div class="o_ks_yesno_input btn-group btn-group-sm" role="group">
+                                                        <button type="button" 
+                                                                class="btn"
+                                                                t-att-class="{'btn-success': getAnswer(employee.appraisal_id, question.id) === 'yes', 'btn-outline-secondary': getAnswer(employee.appraisal_id, question.id) !== 'yes'}"
+                                                                t-on-click="() => this.onOptionSelect(employee.appraisal_id, question.id, 'yes')">
+                                                            Yes
+                                                        </button>
+                                                        <button type="button" 
+                                                                class="btn"
+                                                                t-att-class="{'btn-danger': getAnswer(employee.appraisal_id, question.id) === 'no', 'btn-outline-secondary': getAnswer(employee.appraisal_id, question.id) !== 'no'}"
+                                                                t-on-click="() => this.onOptionSelect(employee.appraisal_id, question.id, 'no')">
+                                                            No
+                                                        </button>
+                                                    </div>
+                                                </t>
+                                                
+                                                <!-- Default Text Input -->
+                                                <t t-else="">
+                                                    <input type="text" 
+                                                           class="form-control form-control-sm"
+                                                           t-att-value="getAnswer(employee.appraisal_id, question.id)"
+                                                           t-on-change="(ev) => this.onInputChange(ev, employee.appraisal_id, question.id)"
+                                                           placeholder="Enter answer..."/>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+            
+            <!-- Validation Popup Modal -->
+            <t t-if="state.showValidationPopup">
+                <div class="o_ks_validation_overlay" t-on-click="closeValidationPopup">
+                    <div class="o_ks_validation_popup" t-on-click.stop="">
+                        <div class="o_ks_popup_icon">
+                            <i class="fa fa-exclamation-triangle text-warning"/>
+                        </div>
+                        <h4 class="o_ks_popup_title">Required Questions Missing</h4>
+                        <p class="o_ks_popup_message">
+                            Some required questions have not been answered. 
+                            Please complete all required questions (marked with <span class="text-danger fw-bold">*</span>) before submitting.
+                        </p>
+                        <button class="btn btn-primary o_ks_popup_btn" t-on-click="closeValidationPopup">
+                            Discard
+                        </button>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+    
+</templates>
